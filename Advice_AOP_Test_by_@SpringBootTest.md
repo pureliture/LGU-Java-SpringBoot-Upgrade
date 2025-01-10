@@ -1,22 +1,10 @@
----
-
 # **Spring Boot 통합 테스트: ControllerAdvice와 AOP**
 
-Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Oriented Programming)** 는 핵심적인 역할을 합니다. 이 글에서는 두 가지 구성 요소를 통합적으로 테스트하는 방법을 다룹니다. 특히 **`@SpringBootTest`** 를 활용하여 ControllerAdvice와 AOP가 의도한 대로 동작하는지 검증하는 테스트를 작성하며, 발생 가능한 문제와 해결책을 포함한 방법을 소개합니다.
+Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Oriented Programming)** 는 중요한 역할을 합니다. 이 글에서는 **ControllerAdvice와 AOP를 통합 테스트**하는 방법을 다룹니다. 특히 **`@SpringBootTest`**, **`MockMvc`**, **DefaultServletHandler 활성화**, **AOP 및 ControllerAdvice 설정**과 관련된 모든 설정과 테스트 코드를 제시하며, 테스트 중 발생할 수 있는 문제와 해결 방법을 포함합니다.
 
 ---
 
-## **테스트 환경에서 발생할 수 있는 문제**
-
-1. **DefaultServletHandler 미설정 문제**:
-   - 통합 테스트 시 DefaultServletHandler가 활성화되지 않으면 반환값 직렬화 및 Content Negotiation 관련 문제가 발생할 수 있습니다.
-
-2. **`@EnableWebMvc` 누락 문제**:
-   - Spring MVC의 기본 설정이 활성화되지 않아 정적 리소스 처리 및 Content Negotiation과 같은 기능이 제대로 동작하지 않을 수 있습니다.
-
----
-
-## **ControllerAdvice와 AOP 테스트를 위한 주요 구성 요소**
+## **ControllerAdvice와 AOP 테스트를 위한 필수 구성 요소**
 
 ### 1. **`@SpringBootTest`**
 - **필수 이유**:
@@ -27,8 +15,9 @@ Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Orien
 
 ### 2. **`MockMvc`**
 - **필수 이유**:
-  - HTTP 요청/응답의 흐름을 시뮬레이션하여, ControllerAdvice와 AOP의 동작을 테스트합니다.
+  - HTTP 요청/응답의 흐름을 시뮬레이션하여 ControllerAdvice와 AOP의 동작을 테스트합니다.
   - 실제 서버를 띄우지 않고도 Spring MVC의 동작을 검증할 수 있습니다.
+- **테스트 환경 설정**: `@AutoConfigureMockMvc` 어노테이션을 추가하여 MockMvc를 자동으로 설정합니다.
 
 ---
 
@@ -46,15 +35,17 @@ Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Orien
 
 ---
 
-### 5. **AOP 설정**
+### 5. **`@EnableAspectJAutoProxy` 활성화**
 - **필수 이유**:
-  - 특정 메서드 실행 전후의 부가 작업(예: 로깅, 인증 등)을 검증하기 위해 AOP를 활성화합니다.
+  - Spring AOP를 활성화하여 테스트 중 Aspect의 동작을 검증합니다.
+  - AOP 기능을 명시적으로 활성화하지 않으면 `@Aspect`로 정의된 컴포넌트가 동작하지 않을 수 있습니다.
 
 ---
 
-### 6. **ControllerAdvice 설정**
+### 6. **테스트용 컨트롤러**
 - **필수 이유**:
-  - Spring MVC에서 발생한 예외를 글로벌하게 처리하고, 적절한 응답을 반환하는지 확인합니다.
+  - 테스트에서 컨트롤러가 없을 경우 AOP와 ControllerAdvice 동작을 검증할 수 없습니다.
+  - 테스트 컨트롤러를 별도로 추가하여, 테스트용 엔드포인트를 제공합니다.
 
 ---
 
@@ -63,11 +54,12 @@ Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Orien
 ### **1. 설정 코드**
 
 #### TestConfig 설정
-TestConfig에 DefaultServletHandler 활성화 및 `@EnableWebMvc`를 추가합니다.
+`TestConfig`에 DefaultServletHandler 활성화, Spring MVC 기능 활성화(`@EnableWebMvc`), 그리고 AOP 기능 활성화(`@EnableAspectJAutoProxy`)를 추가합니다.
 
 ```java
 @Configuration
 @EnableWebMvc // Spring MVC 기능 활성화
+@EnableAspectJAutoProxy // AOP 활성화
 public class TestConfig implements WebMvcConfigurer {
 
     @Override
@@ -115,8 +107,8 @@ public class GlobalExceptionHandler {
 
 ---
 
-#### 테스트용 Controller
-테스트를 위해 간단한 Controller를 생성합니다.
+#### 테스트용 컨트롤러
+테스트를 위해 간단한 컨트롤러를 생성합니다.
 
 ```java
 @RestController
@@ -141,7 +133,7 @@ public class TestController {
 
 ```java
 @SpringBootTest(classes = {TestConfig.class, LoggingAspect.class, GlobalExceptionHandler.class, TestController.class})
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc // MockMvc 자동 설정
 public class IntegrationTest {
 
     @Autowired
@@ -178,14 +170,18 @@ public class IntegrationTest {
 Spring Boot에서 ControllerAdvice와 AOP를 통합 테스트하려면 다음 요소를 설정해야 합니다:
 
 1. **`@SpringBootTest`**: 애플리케이션 컨텍스트를 완전히 로드.
-2. **`MockMvc`**: HTTP 요청/응답 흐름을 시뮬레이션.
+2. **`@AutoConfigureMockMvc`**: MockMvc 설정을 자동으로 활성화하여 테스트 효율성을 높임.
 3. **DefaultServletHandler 활성화**:
    - 반환값 직렬화 문제 방지.
    - Content Negotiation 및 핸들러 체인 개선.
 4. **`@EnableWebMvc` 활성화**:
    - Spring MVC의 기능을 명시적으로 활성화.
    - Content Negotiation 및 정적 리소스 처리를 보장.
-5. **AOP 설정**: 특정 어노테이션의 동작 전후를 검증.
-6. **ControllerAdvice 설정**: 글로벌 예외 처리 동작 검증.
+5. **`@EnableAspectJAutoProxy` 활성화**:
+   - AOP의 동작 보장.
+6. **테스트용 컨트롤러 추가**:
+   - AOP와 ControllerAdvice가 올바르게 동작하는지 확인.
+7. **MockMvc를 활용한 테스트 코드 작성**:
+   - HTTP 요청/응답 시뮬레이션을 통한 AOP 및 예외 처리 검증.
 
 --- 
