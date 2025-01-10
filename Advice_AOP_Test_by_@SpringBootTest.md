@@ -2,16 +2,24 @@
 
 # **Spring Boot 통합 테스트: ControllerAdvice와 AOP**
 
-Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Oriented Programming)** 는 중요한 역할을 합니다. 이 글에서는 두 가지 구성 요소를 통합적으로 테스트하는 방법을 다룹니다. 특히 **`@SpringBootTest`** 를 활용하여 ControllerAdvice와 AOP가 의도한 대로 동작하는지 검증하는 테스트를 작성하고, 발생 가능한 문제를 해결하는 데 필요한 설정을 포함한 방법을 제안합니다.
+Spring Boot 애플리케이션에서 **ControllerAdvice**와 **AOP (Aspect-Oriented Programming)** 는 핵심적인 역할을 합니다. 이 글에서는 두 가지 구성 요소를 통합적으로 테스트하는 방법을 다룹니다. 특히 **`@SpringBootTest`** 를 활용하여 ControllerAdvice와 AOP가 의도한 대로 동작하는지 검증하는 테스트를 작성하며, 발생 가능한 문제와 해결책을 포함한 방법을 소개합니다.
+
+---
+
+## **테스트 환경에서 발생할 수 있는 문제**
+
+1. **DefaultServletHandler 미설정 문제**:
+   - 통합 테스트 시 DefaultServletHandler가 활성화되지 않으면 반환값 직렬화 및 Content Negotiation 관련 문제가 발생할 수 있습니다.
+
+2. **`@EnableWebMvc` 누락 문제**:
+   - Spring MVC의 기본 설정이 활성화되지 않아 정적 리소스 처리 및 Content Negotiation과 같은 기능이 제대로 동작하지 않을 수 있습니다.
 
 ---
 
 ## **ControllerAdvice와 AOP 테스트를 위한 주요 구성 요소**
 
-Spring Boot에서 ControllerAdvice와 AOP를 테스트하려면 다음 요소를 설정해야 합니다:
-
 ### 1. **`@SpringBootTest`**
-- **필수 이유**: 
+- **필수 이유**:
   - Spring Boot 애플리케이션 컨텍스트를 완전히 로드하여 AOP와 ControllerAdvice를 포함한 모든 Spring 구성 요소를 활성화합니다.
   - 통합 테스트에서 실제 애플리케이션 환경과 유사한 동작을 보장합니다.
 
@@ -31,13 +39,20 @@ Spring Boot에서 ControllerAdvice와 AOP를 테스트하려면 다음 요소를
 
 ---
 
-### 4. **AOP 설정**
+### 4. **`@EnableWebMvc` 활성화**
+- **필수 이유**:
+  - Spring MVC 설정을 명시적으로 활성화하여 DefaultServletHandler, Content Negotiation, 정적 리소스 처리 등의 기능을 보장합니다.
+  - 테스트 설정에서 `@EnableWebMvc`를 추가하지 않을 경우, Spring MVC의 핵심 기능이 누락될 수 있습니다.
+
+---
+
+### 5. **AOP 설정**
 - **필수 이유**:
   - 특정 메서드 실행 전후의 부가 작업(예: 로깅, 인증 등)을 검증하기 위해 AOP를 활성화합니다.
 
 ---
 
-### 5. **ControllerAdvice 설정**
+### 6. **ControllerAdvice 설정**
 - **필수 이유**:
   - Spring MVC에서 발생한 예외를 글로벌하게 처리하고, 적절한 응답을 반환하는지 확인합니다.
 
@@ -48,10 +63,11 @@ Spring Boot에서 ControllerAdvice와 AOP를 테스트하려면 다음 요소를
 ### **1. 설정 코드**
 
 #### TestConfig 설정
-TestConfig에 DefaultServletHandler를 활성화하여 반환값 직렬화 문제를 방지합니다.
+TestConfig에 DefaultServletHandler 활성화 및 `@EnableWebMvc`를 추가합니다.
 
 ```java
 @Configuration
+@EnableWebMvc // Spring MVC 기능 활성화
 public class TestConfig implements WebMvcConfigurer {
 
     @Override
@@ -166,9 +182,10 @@ Spring Boot에서 ControllerAdvice와 AOP를 통합 테스트하려면 다음 �
 3. **DefaultServletHandler 활성화**:
    - 반환값 직렬화 문제 방지.
    - Content Negotiation 및 핸들러 체인 개선.
-4. **AOP 설정**: 특정 어노테이션의 동작 전후를 검증.
-5. **ControllerAdvice 설정**: 글로벌 예외 처리 동작 검증.
-
-위 설정을 적용하면 ControllerAdvice와 AOP가 의도한 대로 동작하는지 통합적으로 검증할 수 있습니다. 추가 질문이 있다면 언제든 말씀해주세요! 😊
+4. **`@EnableWebMvc` 활성화**:
+   - Spring MVC의 기능을 명시적으로 활성화.
+   - Content Negotiation 및 정적 리소스 처리를 보장.
+5. **AOP 설정**: 특정 어노테이션의 동작 전후를 검증.
+6. **ControllerAdvice 설정**: 글로벌 예외 처리 동작 검증.
 
 --- 
