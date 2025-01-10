@@ -1,0 +1,25 @@
+멀티 모듈 프레임워크 버전 업그레이드 검증을 위한 테스트 코드 개발기
+- 테스트 코드로 업그레이드 검증을 시도하게 된 이유
+- `main.test` 패키지가 갖는 의미
+- 단위 테스트
+- 컨텍스트 로드 테스트
+    - 멀티 모듈 구성으로 인한 컨텍스트 로드 시 주의해야 할 사항
+    - 서브 모듈 테스트 시 원하는 Bean만 등록하여 컨텍스트를 로드하는 방법
+        - > 서브 모듈이 갖는 특성으로 인해 컨텍스트 등록 시 응용 어플리케이션과 달라지는 점
+        - `@ExtendWith(SpringExtension.class)`
+        - `@SpringBootTest`
+            - `test` 패키지에 `@SpringBootApplication`을 추가할 경우 발생할 수 있는 문제
+            - `@TestConfiguration`만 사용할 경우 Config 클래스에 정의한 대로 Bean이 등록되지 않는 문제
+                - `@TestConfiguration`
+                - `@Configuration`
+            - Config를 통한 Bean 등록이 필요 없을 경우 간단하게 Bean 등록하는 방법
+            - `InitializingBean` 구현체를 Bean으로 등록하여 테스트 할 경우 주의사항
+                - `@PostBeanContruct`가 사용된 Bean은 어떻게 해야할지?
+        - 테스트 컨텍스트 로드 시 Config 클래스를 활용하여 Bean 등록 커스터마이징하는 방법
+            - `@AutoConfiguration`
+            - `@Configuration + @Profile`
+        - 프로퍼티 클래스와 yml, proterties 파일 바인딩 방법
+            - `@ActiveProfiles`와 `application-{profile}.properties || application-{profile}.yml`
+- 테스트 코드만으로 완벽하게 프레임워크를 검증할 수 있는가에 대한 고찰
+    - 프레임워크를 사용하는 데모 어플리케이션이 없을 경우의 한계
+    - 데모 어플리케이션을 활용한 검증의 범위는 어떻게 되는지
