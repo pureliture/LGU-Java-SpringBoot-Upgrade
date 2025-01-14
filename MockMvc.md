@@ -190,3 +190,21 @@ class MockMvcAopControllerAdviceTest {
    - `@EnableAspectJAutoProxy`와 포인트컷(Pointcut) 설정을 통해 AOP를 활성화.
 
 ---
+
+### 참고 자료
+#### 1. @EnableWebMvc
+- Spring MVC 설정을 활성화하며, 다음 작업을 수행합니다:
+     1. `RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`와 같은 Spring MVC의 핵심 빈을 등록합니다.
+     2. Spring의 컨트롤러(`@Controller`, `@RestController`)를 활성화합니다.
+     3. 예외 처리기(`@ControllerAdvice`)를 Spring 컨텍스트에 등록합니다.
+     4. HTTP 요청 매핑, 데이터 바인딩, 메시지 컨버터 설정 등을 처리합니다.
+- 필수 이유:
+     - MockMvc 테스트에서 컨트롤러와 예외 처리기를 테스트하려면 Spring MVC의 핵심 구성 요소가 활성화되어야 합니다.
+#### 2. @EnableAspectJAutoProxy
+- AOP(Aspect-Oriented Programming)를 활성화하여 다음 작업을 수행합니다:
+     1. Spring의 AOP 기반 어드바이스를 동작시킵니다.
+     2. `@Aspect`가 선언된 클래스에서 포인트컷, 어드바이스를 설정합니다.
+     3. AOP 프록시를 생성하여 대상 객체의 메서드 실행 전후에 동작을 삽입합니다.
+- 필수 이유:
+     - MockMvc 테스트에서 AOP가 동작하려면 AOP 프록시가 활성화되어야 합니다.
+
