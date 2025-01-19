@@ -1,6 +1,6 @@
 > AI 가 생성한 문서입니다. (ChatGPT 4o)
 
-### 1\. **임의 환경변수와 `ExecutionCondition`**를 활용한 Datashield 활성화/비활성화
+### 1\. 임의 환경변수와 `ExecutionCondition`를 활용한 Datashield 활성화/비활성화
 
 1. **테스트 환경 파일**:
    - `src/test/resources/datashield-activation-application.yml`
