@@ -31,7 +31,7 @@
 `KafkaAutoConfiguration`을 명시적으로 추가하여 Kafka 관련 빈만 로드하도록 설정했습니다.
 
 ```java
-@ContextConfiguration(classes = {KafkaAutoConfiguration.class, TopicInspectorTestConfig.class, KafkaStreamInspectorTestConfig.class})
+@ContextConfiguration(classes = {KafkaAutoConfiguration.class)
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"test-topic"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
