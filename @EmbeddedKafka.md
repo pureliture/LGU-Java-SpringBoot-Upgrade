@@ -1,4 +1,4 @@
-### **Spring Kafka 테스트 환경: `@EmbeddedKafka`와 `@AutoConfiguration` 비교**
+### @EmbeddedKafka 사용 시 @AutoConfiguration 적용 유무에 따른 구성 비교
 
 ---
 
