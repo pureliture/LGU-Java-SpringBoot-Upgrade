@@ -25,8 +25,10 @@ Spring Cloud Stream 환경에서 Kafka 메시지 송수신을 제어하는 `Kafk
 ### **3.1 MockStaticTestExecutionListener**
 - **역할**: 특정 정적 메서드 호출을 감지하고, 필요 시 Mocking을 수행하는 기능을 제공함.  
 - **사용된 이유**:  
-  - `KafkaStreamInspectorAspector`는 AOP 기반으로 동작하므로, **해당 Aspect가 정상적으로 메시지를 검사하는지 확인할 필요가 있음**.  
-  - `MockStaticTestExecutionListener`를 적용하여 **정적 메서드가 예상대로 호출되었는지를 검증하는 기능을 수행함**.  
+  - Application Context 생성 도중에 `AllowedTopicsReader`에서 비동기메시징 포털 토픽 목록 조회 API를 호출함
+    - `PropertyUtil.getResource`로 `Resource` 객체를 생성하여 API 호출
+  - 테스트 코드에서는 실제 API 호출이 발생하지 않게 API 호출을 Mock 처리해야함
+  - `MockStaticTestExecutionListener`에서 Application Context 생성이 시작되기 전에 `MockedStatic`으로 `PropertyUtil.getResource` 메소드를 Mock 처리하여 실제 API 호출이 발생하지 않게 방지
 
 ### **3.2 SpringCloudStreamTestConfig**
 - **역할**: Spring Cloud Stream의 테스트 환경을 구성하는 역할을 수행함.  
